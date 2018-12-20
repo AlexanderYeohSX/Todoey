@@ -10,11 +10,17 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
 
-    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    var itemArray = [""]
+    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            
+            itemArray = items
+        }
         
     }
     
@@ -37,7 +43,7 @@ class TodoListViewController: UITableViewController {
     // MARK - Tableview Data Source Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(tableView.cellForRow(at: indexPath)?.textLabel?.text)
+        //print(tableView.cellForRow(at: indexPath)?.textLabel?.text)
         
         if tableView.cellForRow(at: indexPath)?.accessoryType != .checkmark {
             
@@ -64,6 +70,9 @@ class TodoListViewController: UITableViewController {
             if let todoItem = textField.text
             {
                 self.itemArray.append(todoItem)
+                
+                self.defaults.set(self.itemArray, forKey: "TodoListArray")
+                
                 self.tableView.reloadData()
             }
             
