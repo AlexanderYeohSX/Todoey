@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     var items: Results<Item>?
@@ -26,6 +26,7 @@ class TodoListViewController: UITableViewController {
         
         let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         print(dataFilePath)
+        
     }
     
     // MARK - Tableview Data Source Methods
@@ -36,7 +37,7 @@ class TodoListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = items?[indexPath.row] {
             
@@ -58,8 +59,7 @@ class TodoListViewController: UITableViewController {
         if let item = items?[indexPath.row]{
             do {
                 try realm.write {
-                    realm.delete(item)
-                    //item.done = !item.done
+                    item.done = !item.done
                 }
             } catch {
                 print(error)
@@ -99,28 +99,35 @@ class TodoListViewController: UITableViewController {
             }
             
         }
-        
-        
+
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Enter Todo Here..."
             textField = alertTextField
             
         }
-        
-
-        
         alert.addAction(action)
-        
         present(alert, animated: true, completion: nil)
         
     }
-    
-    
     
     func loadItems() {
         
         items = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         tableView.reloadData()
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        
+        if let item = items?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(item)
+                }
+                
+            } catch {
+                print(error)
+            }
+        }
     }
 }
 
