@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController {
 
@@ -19,14 +20,44 @@ class TodoListViewController: SwipeTableViewController {
             loadItems()
         }
     }
+    @IBOutlet weak var searchBar: UISearchBar!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
         let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        tableView.separatorStyle = .none
+        
         print(dataFilePath)
         
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+        title = selectedCategory?.name
+        
+        guard let colourHex = selectedCategory?.colour else {
+            fatalError()
+        }
+        
+        updateNavBar(withHexCode: colourHex)
+      
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        updateNavBar()
+    }
+    
+    //MARK: - Nav Bar Setup Method
+    func updateNavBar(withHexCode colourHexCode: String = "1D9BF6" ) {
+        
+        navigationController?.navigationBar.barTintColor = UIColor(hexString:colourHexCode)
+        navigationController?.navigationBar.tintColor = ContrastColorOf(UIColor(hexString:(selectedCategory?.colour)!)!, returnFlat: true)
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(UIColor(hexString:(selectedCategory?.colour)!)!, returnFlat: true )]
+        
+        searchBar.barTintColor =  UIColor(hexString:(selectedCategory?.colour)!)!
     }
     
     // MARK - Tableview Data Source Methods
@@ -42,6 +73,11 @@ class TodoListViewController: SwipeTableViewController {
         if let item = items?[indexPath.row] {
             
             cell.textLabel?.text = item.title
+            
+            if let colour = UIColor(hexString:(selectedCategory?.colour)!)?.darken(byPercentage:CGFloat(indexPath.row)/CGFloat(items!.count)){
+                cell.backgroundColor = colour
+                cell.textLabel?.textColor = ContrastColorOf(colour, returnFlat: true)
+            }
             cell.accessoryType = item.done ? .checkmark : .none
         
         } else {
